@@ -1,97 +1,163 @@
-// GameMusicHits — servidor WebSocket (playlist vem do frontend)
+// =============================
+// GameMusicHits - WebSocket Server
+// =============================
+
 const WebSocket = require("ws");
 const PORT = process.env.PORT || 8080;
-const wss = new WebSocket.Server({ port: PORT });
-console.log("Servidor GameMusicHits WS rodando na porta", PORT);
 
-const rooms = {};
+console.log("Iniciando servidor GameMusicHits...");
 
-function broadcast(room, msg){
-  if(!rooms[room]) return;
-  const s = JSON.stringify(msg);
-  Object.values(rooms[room].players).forEach(p=>{
-    if(p.ws && p.ws.readyState===WebSocket.OPEN) p.ws.send(s);
-  });
-}
+// =============================
+// VARIÁVEIS DE ESTADO
+// =============================
 
-wss.on("connection", ws=>{
-  ws.id = "p_"+Math.random().toString(36).slice(2,8);
+const rooms = {};  
+// Estrutura:
+// rooms[roomCode] = {
+//    players: [],
+//    playlist: [],
+// }
 
-  ws.on("message", msg=>{
-    try{ handle(ws, JSON.parse(msg)); }catch(e){ console.error(e); }
-  });
+// =============================
+// SERVIDOR WS
+// =============================
 
-  ws.on("close", ()=>{
-    for(const room in rooms){
-      if(rooms[room].players[ws.id]){
-        delete rooms[room].players[ws.id];
-        updatePlayers(room);
-      }
-    }
-  });
+const wss = new WebSocket.Server({ port: PORT }, () => {
+    console.log(`Servidor GameMusicHits WS rodando na porta ${PORT}`);
 });
 
-function handle(ws, d){
-  if(d.type==="create-room"){
-    rooms[d.room] = {
-      players:{},
-      hostId:d.player.id,
-      playlist:[],
-      state:"lobby",
-      order:[],
-      currentIndex:0
-    };
-    rooms[d.room].players[d.player.id] = {id:d.player.id, name:d.player.name, ws, score:0};
-    broadcast(d.room,{type:"room-created", room:d.room, host:d.player.id});
-    updatePlayers(d.room);
-  }
+wss.on("connection", (ws) => {
+    console.log("Cliente conectado!");
 
-  if(d.type==="join-room"){
-    if(!rooms[d.room]) return ws.send(JSON.stringify({type:"error",message:"Sala não existe"}));
-    rooms[d.room].players[d.player.id] = {id:d.player.id,name:d.player.name,ws,score:0};
-    updatePlayers(d.room);
-  }
+    ws.on("message", (data) => {
+        try {
+            const msg = JSON.parse(data);
+            handle(ws, msg);
+        } catch (err) {
+            console.error("Erro ao processar mensagem:", err);
+            ws.send(JSON.stringify({ error: "INVALID_JSON" }));
+        }
+    });
 
-  if(d.type==="start-game"){
-    const room = d.room;
-    rooms[room].playlist = d.playlist || [];
-    rooms[room].order = shuffle([...Array(rooms[room].playlist.length).keys()]);
-    rooms[room].currentIndex = 0;
-    rooms[room].state = "playing";
+    ws.on("close", () => {
+        console.log("Cliente desconectado");
+    });
+});
 
-    broadcast(room,{type:"start", currentIndex:0, song:rooms[room].playlist[rooms[room].order[0]]});
+// =============================
+// FUNÇÃO PRINCIPAL
+// =============================
 
-    const interval = (d.duration || 10) * 1000 + 2000;
-    rooms[room].timer = setInterval(()=>{
-      const r = rooms[room];
-      r.currentIndex++;
-      if(r.currentIndex >= r.order.length){
-        clearInterval(r.timer);
-        broadcast(room,{type:"game-ended"});
+function handle(ws, msg) {
+    const { action, room, name, playlist } = msg;
+
+    console.log("Recebido:", msg);
+
+    // =============================
+    // VALIDAR NOME DA SALA
+    // =============================
+    if (!room || typeof room !== "string") {
+        if (action !== "createRoom") {
+            ws.send(JSON.stringify({
+                error: "ROOM_NOT_PROVIDED",
+                message: "Nenhuma sala foi informada."
+            }));
+            return;
+        }
+    }
+
+    // =============================
+    // CRIAR SALA
+    // =============================
+    if (action === "createRoom") {
+        if (!rooms[room]) {
+            rooms[room] = { players: [], playlist: [] };
+            console.log("Sala criada:", room);
+        }
+        ws.send(JSON.stringify({ action: "roomCreated", room }));
         return;
-      }
-      broadcast(room,{
-        type:"new-song",
-        index:r.currentIndex,
-        song:r.playlist[r.order[r.currentIndex]]
-      });
-    }, interval);
-  }
+    }
+
+    // =============================
+    // TENTAR ACESSAR SALA
+    // =============================
+
+    if (!rooms[room]) {
+        ws.send(JSON.stringify({
+            error: "ROOM_NOT_FOUND",
+            room,
+            message: `A sala '${room}' não existe no servidor.`
+        }));
+        console.log("Tentativa de acessar sala inexistente:", room);
+        return;
+    }
+
+    // =============================
+    // ENTRAR NA SALA
+    // =============================
+    if (action === "join") {
+        if (!name) {
+            ws.send(JSON.stringify({
+                error: "NAME_REQUIRED",
+                message: "É necessário informar um nome para entrar na sala."
+            }));
+            return;
+        }
+
+        rooms[room].players.push(name);
+
+        broadcast(room, {
+            action: "playerJoined",
+            room,
+            players: rooms[room].players
+        });
+
+        ws.send(JSON.stringify({
+            action: "joined",
+            room,
+            players: rooms[room].players
+        }));
+
+        console.log(`Jogador ${name} entrou na sala ${room}`);
+        return;
+    }
+
+    // =============================
+    // ATUALIZAR PLAYLIST
+    // =============================
+    if (action === "setPlaylist") {
+        rooms[room].playlist = playlist || [];
+
+        console.log("Playlist atualizada na sala:", room);
+
+        broadcast(room, {
+            action: "playlistUpdated",
+            room,
+            playlist: rooms[room].playlist
+        });
+
+        return;
+    }
+
+    // =============================
+    // AÇÃO DESCONHECIDA
+    // =============================
+    ws.send(JSON.stringify({
+        error: "UNKNOWN_ACTION",
+        message: `Ação '${action}' não reconhecida pelo servidor.`
+    }));
 }
 
-function updatePlayers(room){
-  broadcast(room,{
-    type:"players",
-    players:Object.values(rooms[room].players).map(p=>({
-      id:p.id, name:p.name, score:p.score
-    }))
-  });
-}
+// =============================
+// FUNÇÃO DE BROADCAST
+// =============================
 
-function shuffle(a){
-  for(let i=a.length-1;i>0;i--){
-    const j=Math.floor(Math.random()*(i+1));
-    [a[i],a[j]]=[a[j],a[i]];
-  }
-  return a;
+function broadcast(room, message) {
+    const str = JSON.stringify(message);
+
+    wss.clients.forEach((client) => {
+        if (client.readyState === WebSocket.OPEN) {
+            client.send(str);
+        }
+    });
 }
