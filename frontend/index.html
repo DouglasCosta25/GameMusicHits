@@ -1,0 +1,34 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8"/>
+<title>GameMusicHits — Jogo Musical Online</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<h1>GameMusicHits — Jogo Musical Online</h1>
+
+<label>Nome</label>
+<input id="name"/>
+
+<label>Sala</label>
+<input id="room"/>
+
+<button id="create">Criar sala</button>
+<button id="join">Entrar</button>
+<button id="start">Iniciar (host)</button>
+
+<div id="status"></div>
+<div id="roomInfo"></div>
+<div id="players"></div>
+<div id="playerWrap" style="margin-top:20px;background:#000;color:#fff;height:180px;"></div>
+
+<select id="duration">
+  <option value="8">8s</option>
+  <option value="10" selected>10s</option>
+  <option value="12">12s</option>
+</select>
+
+<script src="game.js"></script>
+</body>
+</html>
