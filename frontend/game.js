@@ -1,5 +1,5 @@
 // GameMusicHits – game.js (versão JSON automática)
-const wsUrl = "gamemusichits.up.railway.app";  // <-- TROQUE AQUI
+const wsUrl = "wss://gamemusichits.up.railway.app";  // <-- TROQUE AQUI
 
 let ws = null;
 let local = { id:null, name:"", room:"", isHost:false, playlist:[], currentIndex:-1 };
