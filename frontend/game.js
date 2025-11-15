@@ -126,20 +126,16 @@ function renderPlayers() {
         playerList.appendChild(li);
     });
 }
-
-function renderPlaylist() {
-    playlistBox.innerHTML = "";
-    local.playlist.forEach(m => {
-        const div = document.createElement("div");
-        div.className = "musicItem";
-        div.innerHTML = `
-            <b>${m.title}</b> (${m.year}) - ${m.artist}
-            <br>
-            <a href="${m.link}" target="_blank">Ouvir</a>
-        `;
-        playlistBox.appendChild(div);
+function renderPlaylist(local) {
+  if (Array.isArray(local.playlist)) {
+    local.playlist.forEach(item => {
+      // lógica para renderizar cada item
     });
+  } else {
+    console.error("Playlist não é um array:", local.playlist);
+  }
 }
+
 
 // ===========================
 // BOTÕES
