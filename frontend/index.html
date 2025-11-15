@@ -1,34 +1,48 @@
-<!doctype html>
-<html>
+<!DOCTYPE html>
+<html lang="pt-BR">
 <head>
-<meta charset="utf-8"/>
-<title>GameMusicHits — Jogo Musical Online</title>
-<link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8" />
+    <title>GameMusicHits</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
-<h1>GameMusicHits — Jogo Musical Online</h1>
 
-<label>Nome</label>
-<input id="name"/>
+    <h1>🎵 GameMusicHits</h1>
+    <p id="status">Status: Conectando...</p>
 
-<label>Sala</label>
-<input id="room"/>
+    <div class="card">
+        <h2>Informações</h2>
 
-<button id="create">Criar sala</button>
-<button id="join">Entrar</button>
-<button id="start">Iniciar (host)</button>
+        <label>Seu nome:</label>
+        <input id="name" placeholder="Digite seu nome">
 
-<div id="status"></div>
-<div id="roomInfo"></div>
-<div id="players"></div>
-<div id="playerWrap" style="margin-top:20px;background:#000;color:#fff;height:180px;"></div>
+        <label>Código da sala:</label>
+        <input id="room" placeholder="Ex: ABC12">
 
-<select id="duration">
-  <option value="8">8s</option>
-  <option value="10" selected>10s</option>
-  <option value="12">12s</option>
-</select>
+        <div class="btn-row">
+            <button id="create">Criar Sala</button>
+            <button id="join">Entrar</button>
+        </div>
 
-<script src="game.js"></script>
+        <div class="info-box">
+            <strong>Sala atual:</strong>
+            <span id="roomBox">Nenhuma</span>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>Jogadores</h2>
+        <ul id="players"></ul>
+    </div>
+
+    <div class="card">
+        <h2>Playlist</h2>
+        <button id="start">Iniciar (Host)</button>
+        <div id="playlistBox"></div>
+    </div>
+
+    <script src="game.js"></script>
 </body>
 </html>

@@ -1,1 +1,94 @@
-body{font-family:Arial;padding:20px;} input,button,select{margin:5px;padding:8px;}
+body {
+    background: #111;
+    color: #f0f0f0;
+    font-family: Arial, Helvetica, sans-serif;
+    margin: 0;
+    padding: 20px;
+}
+
+h1 {
+    text-align: center;
+    color: #00d2ff;
+    margin-bottom: 20px;
+}
+
+#status {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.card {
+    background: #1d1d1d;
+    padding: 20px;
+    margin-bottom: 20px;
+    border-radius: 12px;
+    border: 1px solid #333;
+}
+
+.card h2 {
+    margin-top: 0;
+    color: #00d2ff;
+}
+
+input {
+    width: 100%;
+    padding: 10px;
+    margin: 6px 0 12px 0;
+    border-radius: 6px;
+    border: 1px solid #444;
+    background: #222;
+    color: #fff;
+}
+
+button {
+    padding: 12px 18px;
+    background: #00d2ff;
+    color: #111;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: 0.3s;
+}
+
+button:hover {
+    background: #00a6cc;
+}
+
+.btn-row {
+    display: flex;
+    gap: 10px;
+}
+
+ul#players {
+    list-style: none;
+    padding: 0;
+}
+
+ul#players li {
+    padding: 8px;
+    margin-bottom: 5px;
+    background: #222;
+    border-radius: 6px;
+    border: 1px solid #333;
+}
+
+.musicItem {
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 8px;
+    background: #222;
+    border: 1px solid #333;
+}
+
+.musicItem a {
+    color: #00d2ff;
+}
+
+.info-box {
+    margin-top: 10px;
+    padding: 10px;
+    background: #222;
+    border: 1px solid #333;
+    border-radius: 6px;
+}
